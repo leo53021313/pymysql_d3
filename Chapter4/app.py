@@ -31,18 +31,21 @@ def sub_category_pie(category):
     return jsonify(sub_category_pie_data)
 
 
+@app.route('/api/products_and_order_details')
+def products_and_order_details():
+    products_and_order_details_data, sub_category = get_products_and_order_details()
+
+    return jsonify({
+                "data": products_and_order_details_data,
+                "sub_category": list(sub_category)
+            })
+
+
 @app.route('/api/hierarchical_data')
 def hierachical_data():
     quantity_data = get_quantity_data()
     
     return jsonify(quantity_data)
-
-
-@app.route('/api/products_and_order_details')
-def products_and_order_details():
-    products_and_order_details_data = get_products_and_order_details()
-
-    return jsonify(products_and_order_details_data)
 
 
 if __name__ == "__main__":

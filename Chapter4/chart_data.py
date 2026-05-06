@@ -68,7 +68,7 @@ def get_sub_category_chart_data(category):
     ]
     """
 
-
+    return ""
 
 def get_products_and_order_details():
     # 取得 products 和 order_details 的資料
@@ -77,30 +77,43 @@ def get_products_and_order_details():
     """
 
     """
-    將資料整理成
+    從 SQL 取得以下資料
     products_and_order_details_result = [
         {'category': 'Furniture', 'sub_category': 'Bookcases', 'product_name': 'Bush Birmingham Collection Bookcase, Dark Cherry', 'sales': Decimal('825.17'), 'profit': Decimal('-14.29')}, 
         {'category': 'Furniture', 'sub_category': 'Bookcases', 'product_name': 'Sauder Camden County Barrister Bookcase, Planked Cherry Finish', 'sales': Decimal('1064.62'), 'profit': Decimal('2.27')},
         {'category': 'Furniture', 'sub_category': 'Bookcases', 'product_name': 'Sauder Inglewood Library Bookcases', 'sales': Decimal('2154.35'), 'profit': Decimal('14.44')}, 
         {'category': 'Furniture', 'sub_category': 'Bookcases', 'product_name': "O'Sullivan 2-Shelf Heavy-Duty Bookcases", 'sales': Decimal('723.85'), 'profit': Decimal('-18.39')},      
         {'category': 'Furniture', 'sub_category': 'Bookcases', 'product_name': 'Hon Metal Bookcases, Gray', 'sales': Decimal('851.76'), 'profit': Decimal('27.00')}
+        ......
     ];
     """
 
+    products_and_order_details_result = []
+    sub_category = []
 
-
-    # 回傳 products_and_order_details_result 以及 所有的 子類別名稱
-    return ""
+    # 回傳 products_and_order_details_result 以及 所有的子類別名稱
+    return products_and_order_details_result, sub_category
 
 
 def get_quantity_data():
-    # 取得所有產品的銷售數量資料
     quantity_query = """
+        SELECT 
+            P.category,
+            P.sub_category, 
+            SUM(O.quantity) AS quantity
+        FROM 
+            superstore.Products AS P
+        JOIN 
+            superstore.OrderDetails AS O 
+            ON P.product_id = O.product_id
+        GROUP BY 
+            P.category, P.sub_category;
+        """
+    
+    profit_count_result = sql_query(quantity_query)
 
+    # 將資料整理成
     """
-
-    """
-    將資料整理成
     data = {
         name: "Root",
         children: [
@@ -128,7 +141,32 @@ def get_quantity_data():
         "children": []
     }
 
-
-
+    for profit_count in profit_count_result:
+        category = profit_count["category"]
+        sub_category = profit_count["sub_category"]
+        profit = profit_count["quantity"]
+        
+        # 檢查 category 是否已存在於 result 中
+        category_found = False
+        for child in result["children"]:
+            if child["name"] == category:
+                category_found = True
+                break
+        
+        # 如果 category 不存在，則新增一個
+        if not category_found:
+            result["children"].append({
+                "name": category,
+                "children": []
+            })
+        
+        # 將 sub_category 和 profit 新增到對應的 category 中
+        for child in result["children"]:
+            if child["name"] == category:
+                child["children"].append({
+                    "name": sub_category,
+                    "value": profit
+                })
 
     return result
+
