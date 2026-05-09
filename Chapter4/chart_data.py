@@ -38,7 +38,11 @@ def sql_query(query, params=None):
 def get_category_chart_data() -> list[dict[str, int]]:
     # 計算每個主類別的產品訂單數量
     category_query = """
-
+        SELECT category AS label, COUNT(OrderDetails.order_id) AS value
+        FROM OrderDetails
+        JOIN Products
+        ON OrderDetails.product_id = Products.product_id
+        GROUP BY Products.category;
     """
 
     """
@@ -49,14 +53,20 @@ def get_category_chart_data() -> list[dict[str, int]]:
         ...
     ]
     """
+    result = sql_query(category_query)
 
 
-    return ""
+    return result
 
 def get_sub_category_chart_data(category):
     # 計算某個主類別，其子類別的產品訂單數量
     sub_category_query = """
-
+        SELECT sub_category AS label, COUNT(OrderDetails.order_id) AS value
+        FROM OrderDetails
+        JOIN Products
+        ON OrderDetails.product_id = Products.product_id
+        WHERE Products.category = %s
+        GROUP BY Products.sub_category;
     """
 
     """
@@ -67,13 +77,18 @@ def get_sub_category_chart_data(category):
         ...
     ]
     """
+    result = sql_query(sub_category_query, category)
 
-    return ""
+
+    return result
 
 def get_products_and_order_details():
     # 取得 products 和 order_details 的資料
     products_order_details_query = """
-
+        SELECT category, sub_category, product_name, sales, profit
+        FROM OrderDetails
+        JOIN Products
+        ON OrderDetails.product_id = Products.product_id;
     """
 
     """
@@ -87,9 +102,10 @@ def get_products_and_order_details():
         ......
     ];
     """
+    
 
-    products_and_order_details_result = []
-    sub_category = []
+    products_and_order_details_result = sql_query(products_order_details_query)
+    sub_category = list({item['sub_category'] for item in products_and_order_details_result})
 
     # 回傳 products_and_order_details_result 以及 所有的子類別名稱
     return products_and_order_details_result, sub_category
